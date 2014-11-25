@@ -11,6 +11,29 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 0) do
+ActiveRecord::Schema.define(version: 20141125031218) do
+
+  create_table "guests", id: false, force: true do |t|
+    t.string   "id",          null: false
+    t.string   "name",        null: false
+    t.boolean  "attendance"
+    t.string   "message_url"
+    t.string   "url"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "guests", ["id"], name: "index_guests_on_id", unique: true
+
+  create_table "parties", id: false, force: true do |t|
+    t.string   "id",         null: false
+    t.string   "owner",      null: false
+    t.datetime "begin_at",   null: false
+    t.string   "location",   null: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "parties", ["id"], name: "index_parties_on_id", unique: true
 
 end
