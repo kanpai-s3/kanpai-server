@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141228015544) do
+ActiveRecord::Schema.define(version: 20150117130229) do
 
   create_table "guests", id: false, force: true do |t|
     t.string   "id",          null: false
@@ -22,6 +22,7 @@ ActiveRecord::Schema.define(version: 20141228015544) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "contact_id"
+    t.string   "party_id"
   end
 
   add_index "guests", ["id"], name: "index_guests_on_id", unique: true
