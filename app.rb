@@ -23,6 +23,7 @@ post '/parties' do
   party.begin_at = params[:begin_at]
   party.location = params[:location]
   party.owner = params[:owner]
+  party.message = params[:message]
   party.save
   res = { id: party[:id] }
   json res
@@ -30,12 +31,14 @@ end
 
 # add guest to party
 post '/parties/:party_id/guests' do
-  guest = Guest.new
-  guest.id = SecureRandom.uuid
-  guest.party_id = params[:party_id]
-  guest.name = params[:name]
-  guest.save
-  res = { id: guest[:id] }
+  party = Party.find_by_id(params[:party_id])
+  party.guests.build(
+    id: SecureRandom.uuid,
+    name: params[:name],
+    phone_number: params[:phone_number]
+    )
+  party.guests.last.save
+  res = { id: party.guests.last.id }
   json res
 end
 
@@ -46,9 +49,11 @@ end
 
 # get party detail
 get '/parties/:party_id' do
-  parties = Party.find_by_id(params[:party_id]).attributes
-  parties[:guests] = Guest.where(:party_id => params[:party_id])
-  json parties
+  party = Party.find_by_id(params[:party_id])
+  guests = party.guests
+  party_detail = party.attributes
+  party_detail[:guests] = guests
+  json party_detail
 end
 
 # get recorded message
