@@ -6,6 +6,14 @@ gem 'activerecord'
 gem 'sinatra-activerecord'
 gem 'sinatra-contrib'
 gem 'rake'
-gem 'sqlite3'
 gem 'rerun'
 gem 'twilio-ruby'
+
+group :development do  
+	gem 'sqlite3'
+end
+	
+group :production do  
+	gem 'pg'
+	gem "activerecord-postgresql-adapter"
+end
