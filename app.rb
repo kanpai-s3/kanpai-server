@@ -37,8 +37,8 @@ post '/parties/:party_id/guests' do
     id: SecureRandom.uuid,
     name: params[:name],
     phone_number: params[:phone_number]
-    )
-  party.guests.last.save
+  )
+  party.save
   # TODO: start invitation call
   res = { id: party.guests.last.id }
   json res
@@ -59,7 +59,7 @@ get '/parties/:party_id' do
 end
 
 # get recorded message
-get '/parties/:party_id/guests/:guest_id/message' do
+get '/guests/:guest_id/message' do
   # TODO: get message from twilio
   res = { message: 'sample' }
   json res
@@ -67,8 +67,8 @@ end
 
 # TwiML for attendance
 get '/guests/:guest_id/twiml/can_attend' do
-  guest = Guest.find_by_id(params[:guest_id])
-  party = Party.find_by_id(guest.party_id)
+  party = Party.joins(:guests).where(guests: {id: params[:guest_id]}).first
+  p party
   response = Twilio::TwiML::Response.new do |r|
     r.Say party.owner + 'さんから飲み会に誘われています', :voice => 'woman', :language => 'ja-jp'
     r.Pause :length => 1
@@ -91,7 +91,7 @@ post '/guests/:guest_id/twiml/can_attend' do
   p 'entered: ' + entered_num
   # TODO: change attendance
   response = Twilio::TwiML::Response.new do |r|
-    r.Redirect '/guests/' + params[:guest_id] + '/twiml/record', :method => 'GET'
+    r.Redirect '/guests/' + params[:guest_id] + '/twiml/will_record', :method => 'GET'
   end
   content_type 'text/xml'
   response.to_xml
@@ -99,8 +99,7 @@ end
 
 # TwiML for record
 get '/guests/:guest_id/twiml/will_record' do
-  guest = Guest.find_by_id(params[:guest_id])
-  party = Party.find_by_id(guest.party_id)
+  party = Party.joins(:guests).where(guests: {id: params[:guest_id]}).first
   response = Twilio::TwiML::Response.new do |r|
     r.Gather :action => '/guests/' + params[:guest_id] + '/twiml/can_attend',
       :method => 'POST',
