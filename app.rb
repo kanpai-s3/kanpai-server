@@ -101,7 +101,7 @@ end
 get '/guests/:guest_id/twiml/will_record' do
   party = Party.joins(:guests).where(guests: {id: params[:guest_id]}).first
   response = Twilio::TwiML::Response.new do |r|
-    r.Gather :action => '/guests/' + params[:guest_id] + '/twiml/can_attend',
+    r.Gather :action => '/guests/' + params[:guest_id] + '/twiml/will_record',
       :method => 'POST',
       :timeout => 10,
       :finishOnKey => '#',
@@ -115,6 +115,7 @@ end
 
 post '/guests/:guest_id/twiml/will_record' do
   entered_num = params[:Digits]
+  p 'entered: ' + entered_num
   res = { message: 'entered ' + entered_num }
   json res
 end
