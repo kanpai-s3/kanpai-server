@@ -14,8 +14,10 @@ class Guest < ActiveRecord::Base
   self.primary_key = :id
 end
 
-#ActiveRecord::Base.configurations = YAML.load_file('database.yml')
-ActiveRecord::Base.establish_connection(ENV['DATABASE_URL'] || :development)
+ActiveRecord::Base.establish_connection(ENV['DATABASE_URL'] || Proc.new do
+  ActiveRecord::Base.configurations = YAML.load_file('database.yml')
+  :development
+end.call)
 
 # create parties
 post '/parties' do
