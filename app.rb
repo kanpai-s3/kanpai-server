@@ -140,7 +140,8 @@ get '/guests/:guest_id/twiml/record' do
     r.Record :action => '/guests/' + params[:guest_id] + '/twiml/record',
     :method => 'POST',
     :finishOnKey => '#',
-    :timeout => 10
+    :timeout => 5,
+    :maxLength => 10
   end
   content_type 'text/xml'
   response.to_xml
