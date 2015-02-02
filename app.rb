@@ -4,6 +4,9 @@ require 'sinatra/json'
 require 'sinatra/activerecord'
 require 'twilio-ruby'
 
+ATTEND = '9';
+RECORD = '9';
+
 class Party < ActiveRecord::Base
   has_many :guests
   self.primary_key = :id
@@ -91,7 +94,7 @@ end
 post '/guests/:guest_id/twiml/can_attend' do
   entered_num = params[:Digits]
   p 'entered: ' + entered_num
-  # TODO: change attendance
+  # TODO: save attendance
   response = Twilio::TwiML::Response.new do |r|
     r.Redirect '/guests/' + params[:guest_id] + '/twiml/will_record', :method => 'GET'
   end
@@ -116,9 +119,50 @@ get '/guests/:guest_id/twiml/will_record' do
 end
 
 post '/guests/:guest_id/twiml/will_record' do
-  entered_num = params[:Digits]
-  p 'entered: ' + entered_num
-  res = { message: 'entered ' + entered_num }
-  json res
+  p "digits" + params[:Digits]
+  if RECORD == params[:Digits]
+    path = '/guests/' + params[:guest_id] + '/twiml/record'
+  else
+    path = '/guests/' + params[:guest_id] + '/twiml/end_call'
+  end
+  response = Twilio::TwiML::Response.new do |r|
+    r.Redirect path, :method => 'GET'
+  end
+  content_type 'text/xml'
+  response.to_xml
 end
 
+get '/guests/:guest_id/twiml/record' do
+  party = Party.joins(:guests).where(guests: {id: params[:guest_id]}).first
+  response = Twilio::TwiML::Response.new do |r|
+    r.Say 'ピーという発信音の後に' + party.owner + 'さんへのメッセージをお話しください', :voice => 'woman', :language => 'ja-jp'
+    r.Pause :length => 1
+    r.Record :action => '/guests/' + params[:guest_id] + '/twiml/record',
+    :method => 'POST',
+    :finishOnKey => '#',
+    :timeout => 10
+  end
+  content_type 'text/xml'
+  response.to_xml
+end
+
+post '/guests/:guest_id/twiml/record' do
+  recordingUrl = params[:RecordingUrl]
+  p recordingUrl
+  # TODO: save recordingUrl
+  response = Twilio::TwiML::Response.new do |r|
+    r.Redirect '/guests/' + params[:guest_id] + '/twiml/end_call', :method => 'GET'
+  end
+  content_type 'text/xml'
+  response.to_xml
+end
+
+# exit call
+get '/guests/:guest_id/twiml/end_call' do
+  # TODO: end processing
+  response = Twilio::TwiML::Response.new do |r|
+    r.Say '通話を終了します', :voice => 'woman', :language => 'ja-jp'
+  end
+  content_type 'text/xml'
+  response.to_xml
+end
