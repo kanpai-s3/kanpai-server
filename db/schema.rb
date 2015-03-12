@@ -11,19 +11,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150124104349) do
+ActiveRecord::Schema.define(version: 20150312153321) do
 
   create_table "guests", id: false, force: true do |t|
-    t.string   "id",           null: false
-    t.string   "name",         null: false
+    t.string   "id",            null: false
+    t.string   "name",          null: false
     t.boolean  "attendance"
-    t.string   "message_url"
     t.string   "url"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "contact_id"
     t.string   "party_id"
     t.integer  "phone_number"
+    t.string   "recording_url"
   end
 
   add_index "guests", ["id"], name: "index_guests_on_id", unique: true

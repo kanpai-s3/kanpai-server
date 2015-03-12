@@ -45,7 +45,7 @@ post '/parties/:party_id/guests' do
   )
   party.save
   # TODO: start invitation call
-  res = { id: party.guests.last.id }
+  res = { id: party.guests.last.id  }
   json res
 end
 
@@ -65,8 +65,8 @@ end
 
 # get recorded message
 get '/guests/:guest_id/message' do
-  # TODO: get message from twilio
-  res = { message: 'sample' }
+  guest = Guest.find_by_id(params[:guest_id])
+  res = { url: guest.recording_url }
   json res
 end
 
@@ -148,9 +148,9 @@ get '/guests/:guest_id/twiml/record' do
 end
 
 post '/guests/:guest_id/twiml/record' do
-  recordingUrl = params[:RecordingUrl]
-  p recordingUrl
-  # TODO: save recordingUrl
+  guest = Guest.find_by_id(params[:guest_id])
+  guest.recording_url = params[:RecordingUrl]
+  guest.save
   response = Twilio::TwiML::Response.new do |r|
     r.Redirect '/guests/' + params[:guest_id] + '/twiml/end_call', :method => 'GET'
   end
