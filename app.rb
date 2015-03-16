@@ -3,9 +3,10 @@ require 'sinatra/reloader'
 require 'sinatra/json'
 require 'sinatra/activerecord'
 require 'twilio-ruby'
+require 'net/http'
 
-ATTEND = '9';
-RECORD = '9';
+ATTEND_KEY = '9';
+RECORD_KEY = '9';
 
 class Party < ActiveRecord::Base
   has_many :guests
@@ -66,8 +67,9 @@ end
 # get recorded message
 get '/guests/:guest_id/message' do
   guest = Guest.find_by_id(params[:guest_id])
-  res = { url: guest.recording_url }
-  json res
+  url = URI.parse(guest.recording_url)
+  content_type 'audio/wav'
+  Net::HTTP.get(url)
 end
 
 # TwiML for attendance
@@ -84,7 +86,7 @@ get '/guests/:guest_id/twiml/can_attend' do
       :timeout => 10,
       :finishOnKey => '#',
       :numDigits => 1 do
-        r.Say '飲み会に参加の場合は9を不参加の場合はそれ以外のキーを押して下さい', :voice => 'woman', :language => 'ja-jp'
+        r.Say '飲み会に参加の場合は' + ATTEND_KEY + 'を不参加の場合はそれ以外のキーを押して下さい', :voice => 'woman', :language => 'ja-jp'
     end
   end
   content_type 'text/xml'
@@ -111,7 +113,7 @@ get '/guests/:guest_id/twiml/will_record' do
       :timeout => 10,
       :finishOnKey => '#',
       :numDigits => 1 do
-        r.Say party.owner + 'さんにメッセージを残す場合は9をメッセージを残さない場合はそれ以外のキーを押して下さい', :voice => 'woman', :language => 'ja-jp'
+        r.Say party.owner + 'さんにメッセージを残す場合は' + RECORD_KEY + 'をメッセージを残さない場合はそれ以外のキーを押して下さい', :voice => 'woman', :language => 'ja-jp'
     end
   end
   content_type 'text/xml'
@@ -120,7 +122,7 @@ end
 
 post '/guests/:guest_id/twiml/will_record' do
   p "digits" + params[:Digits]
-  if RECORD == params[:Digits]
+  if RECORD_KEY == params[:Digits]
     path = '/guests/' + params[:guest_id] + '/twiml/record'
   else
     path = '/guests/' + params[:guest_id] + '/twiml/end_call'
