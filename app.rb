@@ -42,7 +42,8 @@ post '/parties/:party_id/guests' do
   party.guests.build(
     id: SecureRandom.uuid,
     name: params[:name],
-    phone_number: params[:phone_number]
+    phone_number: params[:phone_number],
+    contact_id: params[:contact_id]
   )
   party.save
   # TODO: start invitation call
