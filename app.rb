@@ -23,6 +23,20 @@ ActiveRecord::Base.establish_connection(ENV['DATABASE_URL'] || Proc.new do
   :development
 end.call)
 
+helpers do
+  def invitation_call(guest_id)
+    guest = Guest.find_by_id(guest_id)
+     
+    @client = Twilio::REST::Client.new ENV['ACCOUNT_SID'], ENV['AUTH_TOKEN']
+    @call = @client.account.calls.create(
+      :from => ENV['FROM_PHONE_NUMBER'], 
+      :to => guest.phone_number,
+      :url => 'https://kanpaidebug.herokuapp.com/guests/' + guest_id + '/twiml/can_attend',
+      :method => 'get'
+    )
+  end
+end
+
 # create parties
 post '/parties' do
   party = Party.new
@@ -39,15 +53,17 @@ end
 # add guest to party
 post '/parties/:party_id/guests' do
   party = Party.find_by_id(params[:party_id])
+  guest_id = SecureRandom.uuid
   party.guests.build(
-    id: SecureRandom.uuid,
+    id: guest_id,
     name: params[:name],
     phone_number: params[:phone_number],
     contact_id: params[:contact_id]
   )
   party.save
-  # TODO: start invitation call
-  res = { id: party.guests.last.id  }
+
+  invitation_call(guest_id)
+  res = { id: guest_id}
   json res
 end
 
